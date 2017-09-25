@@ -84,14 +84,14 @@ module.exports = function (mongoose) {
           Log.note("Generating Get Data endpoints for " + collectionName);
 
           const getAntDataHandler = function (request, reply) {
-            Ant.findOne({ name: request.params.name })
+            Ant.findOne({ _id: request.params.id })
               .then(function (result) {
                 if (result) {
-                  Log.log("Found ant by name.");
+                  Log.log("Found ant.");
                   return reply(true);
                 }
                 else {
-                  Log.log("Did not find ant by name.");
+                  Log.log("Did not find ant.");
                   return reply(false);
                 }
               })
@@ -103,10 +103,10 @@ module.exports = function (mongoose) {
 
           //Get Coordinates from GPS
           const getCoordinatesHandler = function (request, reply) {
-            Ant.findOne({ name: request.params.name })
+            Ant.findOne({ _id: request.params.id })
               .then(function (result) {
                 if (result) {
-                  Log.log("Found ant by name.");
+                  Log.log("Found ant.");
                   //TODO
                   var coordinate = {
                     latitude: result.latitude, 
@@ -127,13 +127,13 @@ module.exports = function (mongoose) {
 
           //Blink Light On/Off
           const blinkLightHandler = function (request, reply) {
-            Ant.findOne({ name: request.params.name })
+            Ant.findOne({ _id: request.params.id })
               .then(function (result) {
                 if (result) {
-                  Log.log("Found ant by name.");
+                  Log.log("Found ant.");
                   var baseurl =
                     "http://192.168.1.238:5100/led/";  //hardcoded for now- replace by lookup from ip table
-                  if (request.params.onoffstatus == 'on') {
+                  if (request.params.onoff == 'on') {
                     axios
                       .get(baseurl + 'switchon')
                       .then(response => {
@@ -145,7 +145,7 @@ module.exports = function (mongoose) {
                         console.log(error);
                       });
                   }
-                  else if (request.params.onoffstatus == 'off') {
+                  else if (request.params.onoff == 'off') {
                     axios
                     .get(baseurl + 'switchoff')
                     .then(response => {
@@ -157,26 +157,14 @@ module.exports = function (mongoose) {
                       console.log(error);
                     });
                   }
-                  else if (request.params.onoffstatus == 'status') { 
-                    axios
-                    .get(baseurl + 'status')
-                    .then(response => {
-                      console.log(
-                        `LED status: ${response.data.results[0]}`
-                      );
-                    })
-                    .catch(error => {
-                      console.log(error);
-                    });
-                  }
                   else { //invalid command
-                    return reply("invalid command sent to LED");
+                    return reply(Boom.badRequest('Invalid command sent to LED'));
                   }
                   return reply(true);
                 }
                 else {
-                  Log.log("Did not find ant by name.");
-                  return reply(false);
+                  Log.log("Did not find ant.");
+                  return reply(Boom.notFound('Could not find info about the ant you requested.'));
                 }
               })
               .catch(function (error) {
@@ -185,9 +173,49 @@ module.exports = function (mongoose) {
               });
           };
 
+          //LED status - on (true) or off (false)
+          const ledStatusHandler = function (request, reply) {
+            Ant.findOne({ _id: request.params.id })
+              .then(function (result) {
+                if (result) {
+                  Log.log("Found ant.");
+                  var baseurl =
+                    "http://192.168.1.238:5100/led/";  
+                    //hardcoded for now- TODO replace by lookup RESULTS from ip table                 
+                  axios
+                    .get(baseurl + 'status')
+                    .then(response => {
+                      let status = JSON.stringify(response.data);
+                      console.log(
+                        `LED status: ${status}`
+                      );
+                      let boolStatus = status.includes('true'); 
+                      //would be better to have more robust solution for above
+                      //i.e, publish an interface that firmware must support to connect
+                      return reply(boolStatus);
+                    })
+                    .catch(error => {
+                      console.log(error);
+                      Log.error(error);
+                      return reply(Boom.badImplementation('There was an error accessing the server.'));
+                    });
+                  }
+                else {
+                  console.log("Did not find ant." + request.params.id + " Got error: " + error);
+                  Log.error("Did not find ant.");
+                  return reply(Boom.notFound('Could not find info about the ant you requested.'));
+                }
+              })
+              .catch(function (error) {
+                console.log(error);
+                Log.error(error);
+                return reply(Boom.badImplementation('There was an error accessing the server.'));
+              });
+          };
+
           server.route({
             method: 'GET',
-            path: '/ant/{name}/getData',
+            path: '/ant/{id}/getData',
             config: {
               handler: getAntDataHandler,
               //add auth
@@ -196,7 +224,7 @@ module.exports = function (mongoose) {
               tags: ['api', 'ant', 'ant data'],
               validate: {
                   params: {
-                      name: Joi.string().required()
+                      id: Joi.string().required()
                   },
               },
               plugins: {
@@ -214,7 +242,7 @@ module.exports = function (mongoose) {
 
           server.route({
             method: 'GET',
-            path: '/ant/{name}/getCoordinates',
+            path: '/ant/{id}/getCoordinates',
             config: {
               handler: getCoordinatesHandler,
               //add auth
@@ -223,7 +251,36 @@ module.exports = function (mongoose) {
               tags: ['api', 'ant', 'ant coordinates'],
               validate: {
                   params: {
-                      name: Joi.string().required()
+                      id: Joi.string().required()
+                  },
+              },
+              plugins: {
+                'hapi-swagger': {
+                  responseMessages: [
+                    { code: 200, message: 'Success' },
+                    { code: 400, message: 'Bad Request' },
+                    { code: 404, message: 'Not Found' },
+                    { code: 500, message: 'Internal Server Error' }
+                  ]
+                }
+              }
+            }
+          });
+
+
+          server.route({
+            method: 'POST',
+            path: '/ant/{id}/blinkLight/{onoff?}',
+            config: {
+              handler: blinkLightHandler,
+              //add auth
+              auth: null,
+              description: 'ant light blink.',
+              tags: ['api', 'ant', 'ant light blink'],
+              validate: {
+                  params: {
+                      id: Joi.string().required(),
+                      onoff: Joi.string()
                   },
               },
               plugins: {
@@ -240,18 +297,17 @@ module.exports = function (mongoose) {
           });
 
           server.route({
-            method: 'POST',
-            path: '/ant/{name}/blinkLight/{onoffstatus?}',
+            method: 'GET',
+            path: '/ant/{id}/ledStatus',
             config: {
-              handler: blinkLightHandler,
+              handler: ledStatusHandler,
               //add auth
               auth: null,
-              description: 'ant light blink.',
+              description: 'ant light status',
               tags: ['api', 'ant', 'ant light blink'],
               validate: {
                   params: {
-                      name: Joi.string().required(),
-                      onoffstatus: Joi.string()
+                      id: Joi.string().required(),
                   },
               },
               plugins: {

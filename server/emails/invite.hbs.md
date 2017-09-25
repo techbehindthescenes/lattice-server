@@ -13,4 +13,4 @@ Password: {{password}}
 
 Love,
 
-The Scal.io Team
+The {{websiteName}} Team

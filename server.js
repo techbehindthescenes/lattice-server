@@ -12,4 +12,5 @@ Composer((err, server) => {
   server.start(() => {
     RestHapi.logUtil.logActionComplete(RestHapi.logger, "Server Initialized", server.info);
   });
+  
 });

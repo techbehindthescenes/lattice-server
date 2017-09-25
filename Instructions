@@ -1,0 +1,15 @@
+"refreshToken":
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI1OWJiZTZkOTlkYmYzYTFhOGM1NWI3MGUiLCJzZXNzaW9uS2V5IjoiMTdlNmExMTktN2MyNS00YTk0LWI0MmItNjljMzJjZWEyYjlhIiwicGFzc3dvcmRIYXNoIjoiJDJhJDEwJDl0UVRiQzEwVXlRY0FpR29DYXJwT3VUdnZubXczLldnc0ZBQWlsM0o2VnpmWDhIWFl5N1k2Iiwic2NvcGUiOlsiU3VwZXJBZG1pbiIsInJvb3QiXSwiaWF0IjoxNTA1NDg2NTUzLCJleHAiOjE1MDU1MDA5NTN9.sgF5fxF09cZA80xdHXQe_AKTwXJn3vWq5c11ztdswbQ
+
+How to use and test this app
+
+0. Open a cmd prompt.
+1. CD into appy folder.
+2. Start appy by running "gulp" at the command line
+3. Go to localhost:8125
+4. Login as email "test@superadmin.com" and password "root"
+5. Get "refreshToken" from the response. This is what you'll use for the header authentication in other methods.
+
+Notes: 
+'Scope' refers to what the user has authorization to see or do
+GET spoke is not working- not returning any results even if there is a spoke. GET spoke/{id} is fine though.

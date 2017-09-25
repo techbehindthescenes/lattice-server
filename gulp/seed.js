@@ -36,14 +36,48 @@ gulp.task('seed', [], function () {
       let users = [];
       let groups = [];
       let permissions = [];
-
+      let spokes = [];
       let promises = [];
 
       return dropCollections(models)
         .then(function (result) {
           return updatePermissions();
-        })
+        }) /*
         .then(function (result) {
+          Log.log("seeding spokes");
+          spokes = [
+            {
+              name: "testspoke",
+              description: "a spoke",
+              spokeType: "Spoke",
+              countryCode: "us",
+              status: "Active",
+              inMaintenance: false,
+              version: "0.1",
+            },
+            {
+              name: "testspoke2",
+              description: "another spoke",
+              spokeType: "Spoke",
+              countryCode: "us",
+              status: "Active",
+              inMaintenance: false,
+              version: "0.1",
+            },
+            {
+              name: "testspoke3",
+              description: "bad spoke",
+              spokeType: "Spoke",
+              countryCode: "us",
+              status: "Inactive",
+              inMaintenance: true,
+              version: "0.1",
+            }
+          ];
+          return RestHapi.create(models.spoke, spokes, Log);
+        }) */
+        .then(function (result) {
+          //spokes = result;
           Log.log("seeding roles");
           roles = [
             {
@@ -350,6 +384,10 @@ function dropCollections(models) {
     .then(function () {
       Log.log("removing authAttempts");
       return models.authAttempt.remove({});
+    })
+    .then(function () {
+      Log.log("removing spokes");
+      return models.spoke.remove({});
     })
     .catch(function (error) {
       Log.error(error);

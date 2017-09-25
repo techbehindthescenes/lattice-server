@@ -21,7 +21,27 @@ const constants = {
     REFRESH: 'jwt-with-session-and-refresh-token'
   },
   PORT: 8125,
-  APP_TITLE: 'appy API'
+  APP_TITLE: 'appy API',
+  NODE_TYPES: {
+    SPOKE: 'Spoke',
+    HUB: 'Hub',
+    CHARGER: 'Charger',
+    GATEWAY_HUB: 'GatewayHub'
+  },
+  ASSET_TYPES: {
+    ANT: 'ant',
+  },
+  COUNTRY_CODES: {
+    US: 'us',
+  },
+  NODE_STATUS: {
+    ACTIVE: 'Active',
+    INACTIVE: 'Inactive',
+  },
+  ANT_STATUS: {
+    ACTIVE: 'Active',
+    INACTIVE: 'Inactive',
+  },
 };
 
 const config = {
@@ -56,7 +76,7 @@ const config = {
       port: 465,
       secure: true,
       auth: {
-        user: 'appyhapi@gmail.com',
+        user: process.env.SMTP_EMAIL,
         pass: process.env.SMTP_PASSWORD
       }
     },
@@ -65,7 +85,7 @@ const config = {
       port: 465,
       secure: true,
       auth: {
-        user: 'appyhapi@gmail.com',
+        user: process.env.SMTP_EMAIL,
         pass: process.env.SMTP_PASSWORD
       }
     }
@@ -77,18 +97,18 @@ const config = {
    */
   defaultEmail: {
     $filter: 'env',
-    local: 'appyhapi@gmail.com',
-    development: 'appyhapi@gmail.com',
-    production: 'appyhapi@gmail.com'
+    local: process.env.SMTP_EMAIL,
+    development: process.env.SMTP_EMAIL,
+    production: process.env.SMTP_EMAIL
   },
   system: {
     fromAddress: {
       name: 'appy',
-      address: 'appyhapi@gmail.com'
+      address: process.env.SMTP_EMAIL
     },
     toAddress: {
       name: 'appy',
-      address: 'appyhapi@gmail.com'
+      address: process.env.SMTP_EMAIL
     }
   },
   clientURL: {
@@ -102,8 +122,8 @@ const config = {
     mongo: {
       URI: {
         $filter: 'env',
-        local: 'mongodb://localhost/appy',
-        $default: 'mongodb://localhost/appy'
+        local: process.env.DB_CONNECTION_URI,
+        $default: process.env.DB_CONNECTION_URI
       }
     },
     cors: {

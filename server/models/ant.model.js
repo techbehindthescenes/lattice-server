@@ -138,11 +138,12 @@ module.exports = function (mongoose) {
                       .get(baseurl + 'switchon')
                       .then(response => {
                         console.log(
-                          `LED turned on: ${response.data.results[0]}`
+                          `LED turned on`
                         );
                       })
                       .catch(error => {
                         console.log(error);
+                        return reply(Boom.badImplementation('There was an error accessing the database.'));
                       });
                   }
                   else if (request.params.onoff == 'off') {
@@ -150,11 +151,12 @@ module.exports = function (mongoose) {
                     .get(baseurl + 'switchoff')
                     .then(response => {
                       console.log(
-                        `LED turned off: ${response.data.results[0]}`
+                        `LED turned off`
                       );
                     })
                     .catch(error => {
                       console.log(error);
+                      return reply(Boom.badImplementation('There was an error accessing the database.'));
                     });
                   }
                   else { //invalid command
